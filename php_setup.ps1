@@ -105,18 +105,25 @@ if ($result -eq 0) {
                     Write-Output "Copying PHP to install directory"
                     copy-item -Path C:\php-$version\* -Destination $installdir -force -Verbose -Recurse
 
+
+                    Write-Output "Configuring the PHP ini"
+                    Copy-Item -Path "$installdir\php.ini-production" -Destination "$installdir\php.ini" -force -Verbose
+                    $file = gc "$installdir\php.ini" | where {$_ -match "; extension_dir = `"ext`""}
+                    $file -replace ";"
+
                     #Add the PHP version to the FastCGI settings in IIS
                     New-PHPVersion -ScriptProcessor "$installdir\php-cgi.exe"
 
 
-                    
-                    
+                                      
                     #Assume that if there's no PHP string the path then it's a new installation
                     if ($envpath = $Env:path | where {$_ -notmatch "php"}) {
 
                     $env:Path += "$installdir"
                    
-                    }                                    
+                    }
+                    
+                                             
 
                     #Check if the version we're installing is newer than the currently installed version
                     $currentinstall = (get-phpconfiguration).version
@@ -133,19 +140,11 @@ if ($result -eq 0) {
                     }
                                                     
 
-                   Write-Output "Configuring the PHP ini"
-                   Copy-Item -Path "$installdir\php.ini-production" -Destination "$installdir\php.ini" -force -Verbose
+                   
 
                   
-                   $file = gc "$installdir\php.ini" | where {$_ -match "; extension_dir = `"ext`""}
-
-                   $file -replace ";"
+                   
              
                  }
 
 if ($result -eq 1 ){exit}
-
-
-
-
-
